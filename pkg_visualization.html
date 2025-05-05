@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 800px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#1f78b4", "id": "Samsung Galaxy A35 5G", "label": "Samsung Galaxy A35 5G", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "Exynos 1380", "label": "Exynos 1380", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "8GB", "label": "8GB", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "128/256GB", "label": "128/256GB", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "6.6\" Super AMOLED", "label": "6.6\" Super AMOLED", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "1080x2340", "label": "1080x2340", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "50+8+5MP", "label": "50+8+5MP", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "13MP", "label": "13MP", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "5000mAh", "label": "5000mAh", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "Android 14", "label": "Android 14", "shape": "dot", "size": 10}, {"color": "#1f78b4", "id": "Samsung Galaxy A54 5G", "label": "Samsung Galaxy A54 5G", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "6.4\" Super AMOLED", "label": "6.4\" Super AMOLED", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "50+12+5MP", "label": "50+12+5MP", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "32MP", "label": "32MP", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "Android 13", "label": "Android 13", "shape": "dot", "size": 10}, {"color": "#1f78b4", "id": "Xiaomi Redmi Note 13 Pro 5G", "label": "Xiaomi Redmi Note 13 Pro 5G", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "Snapdragon 7s Gen 2", "label": "Snapdragon 7s Gen 2", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "6.67\" AMOLED", "label": "6.67\" AMOLED", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "1220x2712", "label": "1220x2712", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "200+8+2MP", "label": "200+8+2MP", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "16MP", "label": "16MP", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "5100mAh", "label": "5100mAh", "shape": "dot", "size": 10}, {"color": "#1f78b4", "id": "Motorola Moto G84", "label": "Motorola Moto G84", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "Snapdragon 695", "label": "Snapdragon 695", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "6.55\" P-OLED", "label": "6.55\" P-OLED", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "1080x2400", "label": "1080x2400", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "50+8MP", "label": "50+8MP", "shape": "dot", "size": 10}, {"color": "#1f78b4", "id": "Infinix Note 40 5G", "label": "Infinix Note 40 5G", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "Dimensity 7020", "label": "Dimensity 7020", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "256GB", "label": "256GB", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "6.78\" AMOLED", "label": "6.78\" AMOLED", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "1080x2436", "label": "1080x2436", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "108+2+2MP", "label": "108+2+2MP", "shape": "dot", "size": 10}, {"color": "#1f78b4", "id": "Poco X6 Pro", "label": "Poco X6 Pro", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "Dimensity 8300 Ultra", "label": "Dimensity 8300 Ultra", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "12GB", "label": "12GB", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "256/512GB", "label": "256/512GB", "shape": "dot", "size": 10}, {"color": "#33a02c", "id": "64+8+2MP", "label": "64+8+2MP", "shape": "dot", "size": 10}]);
+                  edges = new vis.DataSet([{"arrows": "to", "from": "Samsung Galaxy A35 5G", "label": "Processador", "to": "Exynos 1380", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A35 5G", "label": "Ram", "to": "8GB", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A35 5G", "label": "Armazenamento", "to": "128/256GB", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A35 5G", "label": "Tela", "to": "6.6\" Super AMOLED", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A35 5G", "label": "Resolucao", "to": "1080x2340", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A35 5G", "label": "Cameras_traseiras", "to": "50+8+5MP", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A35 5G", "label": "Camera_frontal", "to": "13MP", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A35 5G", "label": "Bateria", "to": "5000mAh", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A35 5G", "label": "Sistema", "to": "Android 14", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A54 5G", "label": "Processador", "to": "Exynos 1380", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A54 5G", "label": "Ram", "to": "8GB", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A54 5G", "label": "Armazenamento", "to": "128/256GB", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A54 5G", "label": "Tela", "to": "6.4\" Super AMOLED", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A54 5G", "label": "Resolucao", "to": "1080x2340", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A54 5G", "label": "Cameras_traseiras", "to": "50+12+5MP", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A54 5G", "label": "Camera_frontal", "to": "32MP", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A54 5G", "label": "Bateria", "to": "5000mAh", "width": 1}, {"arrows": "to", "from": "Samsung Galaxy A54 5G", "label": "Sistema", "to": "Android 13", "width": 1}, {"arrows": "to", "from": "Xiaomi Redmi Note 13 Pro 5G", "label": "Processador", "to": "Snapdragon 7s Gen 2", "width": 1}, {"arrows": "to", "from": "Xiaomi Redmi Note 13 Pro 5G", "label": "Ram", "to": "8GB", "width": 1}, {"arrows": "to", "from": "Xiaomi Redmi Note 13 Pro 5G", "label": "Armazenamento", "to": "128/256GB", "width": 1}, {"arrows": "to", "from": "Xiaomi Redmi Note 13 Pro 5G", "label": "Tela", "to": "6.67\" AMOLED", "width": 1}, {"arrows": "to", "from": "Xiaomi Redmi Note 13 Pro 5G", "label": "Resolucao", "to": "1220x2712", "width": 1}, {"arrows": "to", "from": "Xiaomi Redmi Note 13 Pro 5G", "label": "Cameras_traseiras", "to": "200+8+2MP", "width": 1}, {"arrows": "to", "from": "Xiaomi Redmi Note 13 Pro 5G", "label": "Camera_frontal", "to": "16MP", "width": 1}, {"arrows": "to", "from": "Xiaomi Redmi Note 13 Pro 5G", "label": "Bateria", "to": "5100mAh", "width": 1}, {"arrows": "to", "from": "Xiaomi Redmi Note 13 Pro 5G", "label": "Sistema", "to": "Android 13", "width": 1}, {"arrows": "to", "from": "Motorola Moto G84", "label": "Processador", "to": "Snapdragon 695", "width": 1}, {"arrows": "to", "from": "Motorola Moto G84", "label": "Ram", "to": "8GB", "width": 1}, {"arrows": "to", "from": "Motorola Moto G84", "label": "Armazenamento", "to": "128/256GB", "width": 1}, {"arrows": "to", "from": "Motorola Moto G84", "label": "Tela", "to": "6.55\" P-OLED", "width": 1}, {"arrows": "to", "from": "Motorola Moto G84", "label": "Resolucao", "to": "1080x2400", "width": 1}, {"arrows": "to", "from": "Motorola Moto G84", "label": "Cameras_traseiras", "to": "50+8MP", "width": 1}, {"arrows": "to", "from": "Motorola Moto G84", "label": "Camera_frontal", "to": "16MP", "width": 1}, {"arrows": "to", "from": "Motorola Moto G84", "label": "Bateria", "to": "5000mAh", "width": 1}, {"arrows": "to", "from": "Motorola Moto G84", "label": "Sistema", "to": "Android 13", "width": 1}, {"arrows": "to", "from": "Infinix Note 40 5G", "label": "Processador", "to": "Dimensity 7020", "width": 1}, {"arrows": "to", "from": "Infinix Note 40 5G", "label": "Ram", "to": "8GB", "width": 1}, {"arrows": "to", "from": "Infinix Note 40 5G", "label": "Armazenamento", "to": "256GB", "width": 1}, {"arrows": "to", "from": "Infinix Note 40 5G", "label": "Tela", "to": "6.78\" AMOLED", "width": 1}, {"arrows": "to", "from": "Infinix Note 40 5G", "label": "Resolucao", "to": "1080x2436", "width": 1}, {"arrows": "to", "from": "Infinix Note 40 5G", "label": "Cameras_traseiras", "to": "108+2+2MP", "width": 1}, {"arrows": "to", "from": "Infinix Note 40 5G", "label": "Camera_frontal", "to": "32MP", "width": 1}, {"arrows": "to", "from": "Infinix Note 40 5G", "label": "Bateria", "to": "5000mAh", "width": 1}, {"arrows": "to", "from": "Infinix Note 40 5G", "label": "Sistema", "to": "Android 14", "width": 1}, {"arrows": "to", "from": "Poco X6 Pro", "label": "Processador", "to": "Dimensity 8300 Ultra", "width": 1}, {"arrows": "to", "from": "Poco X6 Pro", "label": "Ram", "to": "12GB", "width": 1}, {"arrows": "to", "from": "Poco X6 Pro", "label": "Armazenamento", "to": "256/512GB", "width": 1}, {"arrows": "to", "from": "Poco X6 Pro", "label": "Tela", "to": "6.67\" AMOLED", "width": 1}, {"arrows": "to", "from": "Poco X6 Pro", "label": "Resolucao", "to": "1220x2712", "width": 1}, {"arrows": "to", "from": "Poco X6 Pro", "label": "Cameras_traseiras", "to": "64+8+2MP", "width": 1}, {"arrows": "to", "from": "Poco X6 Pro", "label": "Camera_frontal", "to": "16MP", "width": 1}, {"arrows": "to", "from": "Poco X6 Pro", "label": "Bateria", "to": "5000mAh", "width": 1}, {"arrows": "to", "from": "Poco X6 Pro", "label": "Sistema", "to": "Android 14", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

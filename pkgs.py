@@ -6,6 +6,21 @@ net = Network(height="600px", width="100%", directed=True, notebook=True)
 # TODO: Adicionar e ler smartphones em uma database em sqlite3
 smartphones = [
     {
+        "nome": "Samsung Galaxy A35 5G",
+        "processador": "Exynos 1380",
+        "ram": "8GB",
+        "armazenamento": ["128GB", "256GB"],
+        "tela": {
+            "tamanho": '6.6"',
+            "tipo": "Super AMOLED",
+        },
+        "resolucao": "1080x2340",
+        "camera_traseira": ["50MP", "8MP", "5MP"],
+        "camera_frontal": "13MP",
+        "bateria": "5000mAh",
+        "sistema": "Android 13",
+    },
+    {
         "nome": "Samsung Galaxy A54 5G",
         "processador": "Exynos 1380",
         "ram": "8GB",

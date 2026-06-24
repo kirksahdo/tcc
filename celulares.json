@@ -1,0 +1,74 @@
+[
+  {
+    "nome": "Samsung Galaxy A35 5G",
+    "processador": "Exynos 1380",
+    "ram": "8GB",
+    "armazenamento": ["128GB", "256GB"],
+    "tela": "6.6' Super AMOLED",
+    "resolucao": "1080x2340",
+    "camera_traseira": ["50MP", "8MP", "5MP"],
+    "camera_frontal": "13MP",
+    "bateria": "5000mAh",
+    "sistema": "Android 13"
+  },
+  {
+    "nome": "Samsung Galaxy A54 5G",
+    "processador": "Exynos 1380",
+    "ram": "8GB",
+    "armazenamento": ["128GB", "256GB"],
+    "tela": "6.4' Super AMOLED",
+    "resolucao": "1080x2340",
+    "camera_traseira": ["50MP", "12MP", "5MP"],
+    "camera_frontal": "32MP",
+    "bateria": "5000mAh",
+    "sistema": "Android 13"
+  },
+  {
+    "nome": "Xiaomi Redmi Note 13 Pro 5G",
+    "processador": "Snapdragon 7s Gen 2",
+    "ram": "8GB",
+    "armazenamento": ["128GB", "256GB"],
+    "tela": "6.67' AMOLED",
+    "resolucao": "1220x2712",
+    "camera_traseira": ["200MP", "8MP", "2MP"],
+    "camera_frontal": "16MP",
+    "bateria": "5100mAh",
+    "sistema": "Android 13"
+  },
+  {
+    "nome": "Motorola Moto G84",
+    "processador": "Snapdragon 695",
+    "ram": "8GB",
+    "armazenamento": ["128GB", "256GB"],
+    "tela": "6.55' P-OLED",
+    "resolucao": "1080x2400",
+    "camera_traseira": ["50MP", "8MP"],
+    "camera_frontal": "16MP",
+    "bateria": "5000mAh",
+    "sistema": "Android 13"
+  },
+  {
+    "nome": "Infinix Note 40 5G",
+    "processador": "Dimensity 7020",
+    "ram": "8GB",
+    "armazenamento": ["256GB"],
+    "tela": "6.78' AMOLED",
+    "resolucao": "1080x2436",
+    "camera_traseira": ["108MP", "2MP", "2MP"],
+    "camera_frontal": "32MP",
+    "bateria": "5000mAh",
+    "sistema": "Android 14"
+  },
+  {
+    "nome": "Poco X6 Pro",
+    "processador": "Dimensity 8300 Ultra",
+    "ram": "12GB",
+    "armazenamento": ["256GB", "512GB"],
+    "tela": "6.67' AMOLED",
+    "resolucao": "1220x2712",
+    "camera_traseira": ["64MP", "8MP", "2MP"],
+    "camera_frontal": "16MP",
+    "bateria": "5000mAh",
+    "sistema": "Android 14"
+  }
+]

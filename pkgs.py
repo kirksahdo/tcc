@@ -1,9 +1,8 @@
 from pyvis.network import Network
 
-net = Network(height="600px", width="100%", directed=True, notebook=True)
+net = Network(height="3000px", width="100%", directed=True, notebook=True)
 
 # Lista de smartphones com atributos e subatributos
-# TODO: Adicionar e ler smartphones em uma database em sqlite3
 smartphones = [
     {
         "nome": "Samsung Galaxy A35 5G",
@@ -18,7 +17,7 @@ smartphones = [
         "camera_traseira": ["50MP", "8MP", "5MP"],
         "camera_frontal": "13MP",
         "bateria": "5000mAh",
-        "sistema": "Android 13",
+        "sistema": "Android 14",
     },
     {
         "nome": "Samsung Galaxy A54 5G",
@@ -102,48 +101,99 @@ empty_node = 0
 
 # Adiciona o nó principal (smartphone) e os atributos simples
 for phone in smartphones:
-    net.add_node(phone["nome"], label=phone["nome"], shape="ellipse", color="#add8e6")
+    net.add_node(
+        phone["nome"],
+        label=phone["nome"],
+        shape="hexagon",
+        color="#4682B4",
+        size=40,
+        borderWidth=2,
+        borderWidthSelected=3,
+    )
 
     for key, value in phone.items():
         if key != "nome":
             # Nó com varios valores
             if isinstance(value, list):
                 for item in value:
-                    net.add_node(item, label=item, shape="box", color="#ffffcc")
+                    net.add_node(
+                        item, label=item, shape="box", color="#F0FFF0", shadow=True
+                    )
                     net.add_edge(phone["nome"], item, label=key)
             # Nó com subatributos
             elif isinstance(value, dict):
                 # Criação do nó vazio para o subatributo
-                net.add_node(n_id=empty_node, label="", shape="circle", color="#f0e68c")
+                net.add_node(
+                    n_id=empty_node, label="", shape="box", color="#F0FFF0", shadow=True
+                )
                 net.add_edge(phone["nome"], empty_node, label=key)
                 # Adiciona os subatributos como nós filhos do nó vazio
                 for sub_key, sub_value in value.items():
                     net.add_node(
-                        sub_value, label=sub_value, shape="box", color="#ffffcc"
+                        sub_value,
+                        label=sub_value,
+                        shape="box",
+                        color="#ffffcc",
+                        shadow=True,
                     )
                     net.add_edge(empty_node, sub_value, label=sub_key)
                 empty_node += 1
             # Nó simples
             else:
-                net.add_node(value, label=value, shape="box", color="#ffffcc")
+                net.add_node(
+                    value, label=value, shape="box", color="#ffffcc", shadow=True
+                )
                 net.add_edge(phone["nome"], value, label=key)
 
 # Aumenta o espaçamento entre os nós
 net.set_options(
     """
 var options = {
-  "physics": {
-    "barnesHut": {
-      "gravitationalConstant": -3000,
-      "centralGravity": 0.3,
-      "springLength": 150,
-      "springConstant": 0.04,
-      "damping": 0.09
+  "nodes": {
+    "font": {
+      "size": 20,
+      "face": "Arial",
+      "color": "#2B2B2B"
     },
-    "minVelocity": 0.75
+    "shadow": {
+      "enabled": true,
+      "color": "rgba(0,0,0,0.2)",
+      "size": 10,
+      "x": 5,
+      "y": 5
+    }
+  },
+  "edges": {
+    "font": {
+      "size": 18,
+      "face": "Verdana",
+      "color": "#1a237e",
+      "background": "#ffffff",
+      "strokeWidth": 3,
+      "strokeColor": "#e3e3e3",
+      "align": "middle"
+    }
+  },
+  "physics": {
+    "enabled": true,
+    "forceAtlas2Based": {
+      "gravitationalConstant": -150,
+      "springLength": 250,
+      "springConstant": 0.02,
+      "damping": 0.4
+    },
+    "maxVelocity": 30,
+    "minVelocity": 0.75,
+    "solver": "forceAtlas2Based",
+    "stabilization": {
+      "enabled": true,
+      "iterations": 200,
+      "fit": true
+    }
   }
 }
 """
 )
+
 
 net.show("pkg_celulares.html")

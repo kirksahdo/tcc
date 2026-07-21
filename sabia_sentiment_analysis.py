@@ -1,4 +1,12 @@
-# Analise de Sentimentos Baseada em Aspectos - SABIA-3
+# Analise de Sentimentos Baseada em Aspectos - Sabia-3.1 (Maritaca AI)
+#
+# Configuracao utilizada no experimento para reprodutibilidade:
+#   Modelo: sabia-3.1 (Maritaca AI, Abonizio et al. 2024)
+#   Endpoint: https://chat.maritaca.ai/api/chat/inference
+#   Temperature: 0.1
+#   Top_p: 1.0 (padrao da API)
+#   Max_tokens: 1000
+#   Data da coleta: setembro-novembro 2025
 
 import pandas as pd
 import json
@@ -11,25 +19,27 @@ import logging
 
 class SabiaSentimentAnalyzer:
     def __init__(self):
-        """Inicializa o analisador com modelo SABIA-3 via API Maritaca"""
+        """Inicializa o analisador com modelo Sabia-3.1 via API Maritaca"""
         self.api_url = "https://chat.maritaca.ai/api/chat/inference"
-        self.api_key = "YOUR_API-KEY-HERE"
+        self.api_key = os.environ.get("MARITACA_API_KEY", "")
 
-        # Especificacoes tecnicas dos celulares
+        # Especificacoes tecnicas dos celulares (fonte: GSMArena)
         self.phone_specs = {
             "Samsung Galaxy A35 5G": {
                 "processador": "Exynos 1380",
                 "ram": "8GB",
+                "armazenamento": "128GB/256GB",
                 "tela": '6.6" Super AMOLED',
                 "resolucao": "1080x2340",
                 "camera_traseira": "50MP+8MP+5MP",
                 "camera_frontal": "13MP",
                 "bateria": "5000mAh",
-                "sistema": "Android 13",
+                "sistema": "Android 14",
             },
             "Samsung Galaxy A54 5G": {
                 "processador": "Exynos 1380",
                 "ram": "8GB",
+                "armazenamento": "128GB/256GB",
                 "tela": '6.4" Super AMOLED',
                 "resolucao": "1080x2340",
                 "camera_traseira": "50MP+12MP+5MP",
@@ -40,6 +50,7 @@ class SabiaSentimentAnalyzer:
             "Xiaomi Redmi Note 13 Pro 5G": {
                 "processador": "Snapdragon 7s Gen 2",
                 "ram": "8GB",
+                "armazenamento": "128GB/256GB",
                 "tela": '6.67" AMOLED',
                 "resolucao": "1220x2712",
                 "camera_traseira": "200MP+8MP+2MP",
@@ -50,6 +61,7 @@ class SabiaSentimentAnalyzer:
             "Motorola Moto G84": {
                 "processador": "Snapdragon 695",
                 "ram": "8GB",
+                "armazenamento": "128GB/256GB",
                 "tela": '6.55" P-OLED',
                 "resolucao": "1080x2400",
                 "camera_traseira": "50MP+8MP",
@@ -60,6 +72,7 @@ class SabiaSentimentAnalyzer:
             "Infinix Note 40 5G": {
                 "processador": "Dimensity 7020",
                 "ram": "8GB",
+                "armazenamento": "256GB",
                 "tela": '6.78" AMOLED',
                 "resolucao": "1080x2436",
                 "camera_traseira": "108MP+2MP+2MP",
@@ -70,6 +83,7 @@ class SabiaSentimentAnalyzer:
             "Poco X6 Pro": {
                 "processador": "Dimensity 8300 Ultra",
                 "ram": "12GB",
+                "armazenamento": "256GB/512GB",
                 "tela": '6.67" AMOLED',
                 "resolucao": "1220x2712",
                 "camera_traseira": "64MP+8MP+2MP",
@@ -80,7 +94,14 @@ class SabiaSentimentAnalyzer:
         }
 
     def create_structured_prompt(self, review: str, phone_model: str) -> str:
-        """Cria prompt estruturado para analise de aspectos"""
+        """Cria prompt hierarquico para extracao de opiniao baseada em aspectos
+
+        Estrutura hierarquica seguindo Li et al. (2025):
+        1. Mensagem do sistema (papel do modelo)
+        2. Descricao da atividade e categorias
+        3. Formato de saida em JSON
+        4. Entrada com o comentario a ser analisado
+        """
         specs = self.phone_specs.get(phone_model, {})
 
         prompt = f"""Voce e um especialista em analise de sentimentos para avaliacoes de smartphones.
@@ -88,7 +109,8 @@ class SabiaSentimentAnalyzer:
 PRODUTO: {phone_model}
 ESPECIFICACOES TECNICAS:
 - Processador: {specs.get('processador', 'N/A')}
-- RAM: {specs.get('ram', 'N/A')} 
+- RAM: {specs.get('ram', 'N/A')}
+- Armazenamento: {specs.get('armazenamento', 'N/A')}
 - Tela: {specs.get('tela', 'N/A')}
 - Resolucao: {specs.get('resolucao', 'N/A')}
 - Camera Traseira: {specs.get('camera_traseira', 'N/A')}
@@ -96,34 +118,40 @@ ESPECIFICACOES TECNICAS:
 - Bateria: {specs.get('bateria', 'N/A')}
 - Sistema: {specs.get('sistema', 'N/A')}
 
-ASPECTOS PARA ANALISE:
-1. processador: desempenho, velocidade, lag, travamentos, CPU, chip
-2. ram: memoria, multitarefa, velocidade, travamento por falta de memoria
-3. tela: display, brilho, cores, qualidade visual, screen, visor
-4. resolucao: nitidez, definicao, pixels, qualidade de imagem
-5. camera_traseira: camera principal, fotos, qualidade fotografica, zoom
-6. camera_frontal: selfie, camera frontal, videochamada
-7. bateria: duracao, autonomia, carregamento, tempo de uso
-8. sistema: Android, interface, software, apps, atualizacoes
+CATEGORIAS DE ASPECTOS (9 categorias):
+1. armazenamento: espaco, memoria interna, capacidade, GB
+2. processador: desempenho, velocidade, lag, travamentos, CPU, chip
+3. ram: memoria RAM, multitarefa, velocidade
+4. tela: display, brilho, cores, qualidade visual, visor
+5. resolucao: nitidez, definicao, pixels, qualidade de imagem da tela
+6. camera_traseira: camera principal, fotos, qualidade fotografica, zoom
+7. camera_frontal: selfie, camera frontal, videochamada
+8. bateria: duracao, autonomia, carregamento, tempo de uso
+9. sistema_operacional: Android, interface, software, apps, atualizacoes
 
 AVALIACAO A ANALISAR:
 "{review}"
 
 INSTRUCOES:
 1. Leia a avaliacao cuidadosamente
-2. Identifique menoens diretas ou indiretas aos aspectos tecnicos
-3. Determine se a opiniao e positiva, negativa ou neutra
+2. Identifique mencoes diretas ou indiretas aos aspectos tecnicos
+3. Para cada aspecto, atribua uma polaridade numerica de -1.0 a +1.0:
+   -1.0 = muito negativo, -0.8 = negativo, -0.5 = moderadamente negativo,
+   -0.2 = levemente negativo, 0.0 = neutro, +0.2 = levemente positivo,
+   +0.5 = moderadamente positivo, +0.8 = positivo, +1.0 = muito positivo
 4. Extraia a evidencia textual que justifica a classificacao
-5. Responda APENAS com um JSON valido no formato especificado
+5. Identifique a sentenca original do comentario
+6. Responda APENAS com um JSON valido no formato abaixo
 
-FORMATO DE RESPOSTA (JSON apenas):
+FORMATO DE RESPOSTA (JSON):
 {{
     "analise": [
         {{
-            "aspecto": "nome_do_aspecto",
-            "opiniao": "positiva/negativa/neutra",
-            "evidencia": "trecho exato do texto",
-            "confianca": "alta/media/baixa"
+            "aspecto": "descricao do aspecto mencionado",
+            "polaridade": valor_numerico_entre_-1_e_1,
+            "evidencia": "trecho do texto que justifica",
+            "categoria": "uma_das_9_categorias_acima",
+            "sentenca": "sentenca original completa"
         }}
     ]
 }}
@@ -141,7 +169,7 @@ Resposta:"""
             }
 
             payload = {
-                "model": "sabia-3",
+                "model": "sabia-3.1",
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.1,
                 "max_tokens": 1000,
@@ -164,32 +192,23 @@ Resposta:"""
     def extract_json_from_response(self, response: str) -> Dict:
         """Extrai e valida JSON da resposta"""
         try:
-            # Procura por JSON na resposta
-            json_patterns = [
-                r'\{[^{}]*"análise"[^{}]*\[[^\]]*\][^{}]*\}',
-                r'\{.*?"análise".*?\}',
-                r"\{.*\}",
-            ]
+            match = re.search(r"\{.*\}", response, re.DOTALL)
+            if match:
+                try:
+                    parsed_json = json.loads(match.group(0))
+                    if "analise" in parsed_json:
+                        return parsed_json
+                except json.JSONDecodeError:
+                    pass
 
-            for pattern in json_patterns:
-                match = re.search(pattern, response, re.DOTALL)
-                if match:
-                    try:
-                        json_str = match.group(0)
-                        parsed_json = json.loads(json_str)
-                        if "análise" in parsed_json:
-                            return parsed_json
-                    except:
-                        continue
-
-            return {"análise": []}
+            return {"analise": []}
 
         except Exception as e:
             logging.warning(f"Erro ao extrair JSON: {e}")
-            return {"análise": []}
+            return {"analise": []}
 
     def analyze_review(self, review: str, phone_model: str) -> Dict:
-        """Analisa uma avaliacao especifica"""
+        """Analisa uma avaliacao e retorna tuplas de opiniao com polaridade numerica"""
         try:
             prompt = self.create_structured_prompt(review, phone_model)
             response = self.call_sabia_api(prompt)
@@ -197,14 +216,21 @@ Resposta:"""
             if response:
                 return self.extract_json_from_response(response)
             else:
-                return {"análise": []}
+                return {"analise": []}
 
         except Exception as e:
-            logging.error(f"Erro na análise: {e}")
-            return {"análise": []}
+            logging.error(f"Erro na analise: {e}")
+            return {"analise": []}
 
     def process_csv(self, csv_path: str, output_path: str = None) -> pd.DataFrame:
-        """Processa arquivo CSV com avaliações"""
+        """Processa arquivo CSV com avaliacoes e extrai tuplas de opiniao.
+
+        Cada tupla extraida tem o formato:
+            <aspecto, polaridade, evidencia, categoria, sentenca>
+        onde polaridade e numerica de -1.0 a +1.0.
+
+        Gera uma linha por tupla de opiniao (nao por avaliacao).
+        """
         try:
             df = pd.read_csv(csv_path)
 
@@ -223,65 +249,60 @@ Resposta:"""
                 "Xiaomi Redmi Note 13 Pro 5g_2": "Xiaomi Redmi Note 13 Pro 5G",
             }
 
+            # 9 categorias de aspectos
+            categorias_validas = [
+                "armazenamento",
+                "processador",
+                "ram",
+                "tela",
+                "resolucao",
+                "camera_traseira",
+                "camera_frontal",
+                "bateria",
+                "sistema_operacional",
+            ]
+
             results = []
 
+            csv_filename = csv_path.split("/")[-1].replace(".csv", "")
+            phone_model = csv_to_product.get(csv_filename, csv_filename)
+
             for index, row in df.iterrows():
-                print(f"Processando avaliacao {index + 1}/{len(df)}")
+                if (index + 1) % 50 == 0:
+                    print(f"Processando avaliacao {index + 1}/{len(df)}")
 
-                # Identifica o produto
-                csv_filename = csv_path.split("/")[-1].replace(".csv", "")
-                phone_model = csv_to_product.get(csv_filename, csv_filename)
-
-                # Obtém o texto da avaliação
                 review_text = str(row.get("Comentário", ""))
 
                 if len(review_text.strip()) > 10:
                     analysis = self.analyze_review(review_text, phone_model)
 
-                    # Prepara resultado
-                    result_row = row.to_dict()
-                    result_row["produto"] = phone_model
-                    result_row["análise_sabia"] = json.dumps(
-                        analysis, ensure_ascii=False
-                    )
-
-                    # Inicializa colunas para aspectos
-                    aspectos = [
-                        "processador",
-                        "ram",
-                        "tela",
-                        "resolucao",
-                        "camera_traseira",
-                        "camera_frontal",
-                        "bateria",
-                        "sistema",
-                    ]
-
-                    for aspecto in aspectos:
-                        result_row[f"{aspecto}_opinião"] = "nao_mencionado"
-                        result_row[f"{aspecto}_evidencia"] = ""
-                        result_row[f"{aspecto}_confianca"] = ""
-
-                    # Preenche com resultados da analise
                     for item in analysis.get("analise", []):
-                        aspecto = item.get("aspecto", "")
-                        if aspecto in aspectos:
-                            result_row[f"{aspecto}_opinião"] = item.get("opinião", "")
-                            result_row[f"{aspecto}_evidencia"] = item.get(
-                                "evidencia", ""
-                            )
-                            result_row[f"{aspecto}_confianca"] = item.get(
-                                "confianca", ""
-                            )
+                        categoria = item.get("categoria", "")
+                        if categoria in categorias_validas:
+                            polaridade = item.get("polaridade", 0)
+                            try:
+                                polaridade = float(polaridade)
+                                polaridade = max(-1.0, min(1.0, polaridade))
+                            except (ValueError, TypeError):
+                                continue
 
-                    results.append(result_row)
+                            results.append({
+                                "comentario_id": row.get("ID", index),
+                                "celular": phone_model,
+                                "rating": row.get("Rating", 0),
+                                "titulo": row.get("Título", ""),
+                                "comentario": review_text,
+                                "aspecto": item.get("aspecto", ""),
+                                "polaridade": polaridade,
+                                "evidencia": item.get("evidencia", ""),
+                                "categoria": categoria,
+                                "sentenca": item.get("sentenca", ""),
+                            })
 
-            # Cria DataFrame de resultados
             result_df = pd.DataFrame(results)
 
-            # Salva se especificado
-            if output_path:
-                result_df.to_csv(output_path, index=False, encoding="utf-8")
+            if output_path and not result_df.empty:
+                result_df.to_excel(output_path, index=False)
                 print(f"Resultados salvos em: {output_path}")
 
             return result_df
@@ -291,30 +312,22 @@ Resposta:"""
             return pd.DataFrame()
 
     def generate_summary_report(self, df: pd.DataFrame) -> Dict:
-        """Gera relatorio resumido da analise"""
+        """Gera relatorio resumido da analise por categoria e celular"""
         try:
-            aspectos = [
-                "processador",
-                "ram",
-                "tela",
-                "resolucao",
-                "camera_traseira",
-                "camera_frontal",
-                "bateria",
-                "sistema",
-            ]
+            summary = {
+                "total_tuplas": len(df),
+                "categorias": {},
+            }
 
-            summary = {"total_avaliacoes": len(df), "aspectos_analisados": {}}
-
-            for aspecto in aspectos:
-                col_opiniao = f"{aspecto}_opinião"
-                if col_opiniao in df.columns:
-                    opinies = df[col_opiniao].value_counts()
-                    summary["aspectos_analisados"][aspecto] = {
-                        "positivas": opinies.get("positiva", 0),
-                        "negativas": opinies.get("negativa", 0),
-                        "neutras": opinies.get("neutra", 0),
-                        "nao_mencionadas": opinies.get("nao_mencionado", 0),
+            if "categoria" in df.columns and "polaridade" in df.columns:
+                for cat in sorted(df["categoria"].unique()):
+                    cat_df = df[df["categoria"] == cat]
+                    summary["categorias"][cat] = {
+                        "total": len(cat_df),
+                        "polaridade_media": round(cat_df["polaridade"].mean(), 3),
+                        "positivas": int((cat_df["polaridade"] > 0).sum()),
+                        "negativas": int((cat_df["polaridade"] < 0).sum()),
+                        "neutras": int((cat_df["polaridade"] == 0).sum()),
                     }
 
             return summary
@@ -325,178 +338,61 @@ Resposta:"""
 
 
 def main():
-    """Função principal para processar analise completa de todos os celulares"""
+    """Processa avaliacoes de todos os CSVs e extrai tuplas de opiniao"""
     print("=" * 60)
-    print("SISTEMA DE ANALISE DE SENTIMENTOS - CELULARES")
-    print("Modelo: SABIA-3")
+    print("EXTRACAO DE OPINIOES BASEADA EM ASPECTOS")
+    print("Modelo: Sabia-3.1 (Maritaca AI)")
+    print("9 categorias | Polaridade numerica [-1, +1]")
     print("=" * 60)
 
-    # Inicializa analisador
+    if not os.environ.get("MARITACA_API_KEY"):
+        print("\nATENCAO: Defina a variavel de ambiente MARITACA_API_KEY")
+        print("  export MARITACA_API_KEY='sua_chave_aqui'")
+        return
+
     analyzer = SabiaSentimentAnalyzer()
 
-    print("\nEscolha uma opcao:")
-    print("1. Processar multiplos arquivos CSV")
-    print("2. Processar arquivo CSV unico")
-    print("3. Teste com exemplo de avaliacao")
-    print("4. Sair")
+    data_folder = "data/reviews"
+    if not os.path.isdir(data_folder):
+        print(f"Pasta {data_folder} nao encontrada")
+        return
 
-    while True:
-        opcao = input("\nDigite a opcao (1-4): ").strip()
+    csv_files = [
+        os.path.join(data_folder, f)
+        for f in os.listdir(data_folder)
+        if f.endswith(".csv") and f != "resultado_unificado.csv"
+    ]
 
-        if opcao == "1":
-            print("\n" + "-" * 50)
-            print("PROCESSAMENTO DE MULTIPLOS ARQUIVOS")
-            print("-" * 50)
+    if not csv_files:
+        print("Nenhum arquivo CSV encontrado")
+        return
 
-            data_folder = input(
-                "Digite o caminho da pasta com os CSVs (ou ENTER para usar pasta atual): "
-            ).strip()
-            if not data_folder:
-                data_folder = os.getcwd()
+    print(f"\n{len(csv_files)} arquivos CSV encontrados")
 
-            csv_files = []
-            try:
-                for file in os.listdir(data_folder):
-                    if file.endswith(".csv"):
-                        csv_files.append(os.path.join(data_folder, file))
+    all_results = []
+    for i, csv_file in enumerate(csv_files, 1):
+        filename = os.path.basename(csv_file)
+        print(f"\n[{i}/{len(csv_files)}] Processando: {filename}")
 
-                if not csv_files:
-                    print(f"Nenhum arquivo CSV encontrado em {data_folder}")
-                    continue
+        df_result = analyzer.process_csv(csv_file)
+        if not df_result.empty:
+            all_results.append(df_result)
+            print(f"  {len(df_result)} tuplas extraidas")
 
-                print(f"\n{len(csv_files)} arquivos CSV encontrados")
+    if all_results:
+        consolidated_df = pd.concat(all_results, ignore_index=True)
+        output_file = "avaliacoes_opinioes.xlsx"
+        consolidated_df.to_excel(output_file, index=False)
 
-                all_results = []
-                output_folder = os.path.join(data_folder, "resultados_analise")
-                os.makedirs(output_folder, exist_ok=True)
+        summary = analyzer.generate_summary_report(consolidated_df)
 
-                for i, csv_file in enumerate(csv_files, 1):
-                    filename = os.path.basename(csv_file)
-                    print(f"\n[{i}/{len(csv_files)}] Processando: {filename}")
-
-                    try:
-                        df_result = analyzer.process_csv(csv_file)
-
-                        if not df_result.empty:
-                            # Salva resultado individual
-                            output_file = os.path.join(
-                                output_folder, f"resultado_{filename}"
-                            )
-                            df_result.to_csv(output_file, index=False, encoding="utf-8")
-                            all_results.append(df_result)
-                            print(f"  Processado: {len(df_result)} avaliacoes")
-                        else:
-                            print(f"  Erro ao processar")
-
-                    except Exception as e:
-                        print(f"  Erro: {e}")
-
-                # Consolida resultados
-                if all_results:
-                    consolidated_df = pd.concat(all_results, ignore_index=True)
-                    consolidated_file = os.path.join(
-                        output_folder, "analise_completa_todos_celulares.csv"
-                    )
-                    consolidated_df.to_csv(
-                        consolidated_file, index=False, encoding="utf-8"
-                    )
-
-                    # Gera relatório consolidado
-                    summary = analyzer.generate_summary_report(consolidated_df)
-
-                    # Salva relatório
-                    report_file = os.path.join(output_folder, "relatorio_completo.json")
-                    with open(report_file, "w", encoding="utf-8") as f:
-                        json.dump(summary, f, indent=2, ensure_ascii=False)
-
-                    print(f"\n{'='*60}")
-                    print("PROCESSAMENTO CONCLUIDO!")
-                    print(f"{'='*60}")
-                    print(f"Total de avaliações: {len(consolidated_df)}")
-                    print(f"Resultados salvos em: {output_folder}")
-                    print(f"- Dados consolidados: analise_completa_todos_celulares.csv")
-                    print(f"- Relatório: relatorio_completo.json")
-
-                    # Mostra resumo por produto
-                    if "produto" in consolidated_df.columns:
-                        print(f"\nDistribuicao por produto:")
-                        for produto, count in (
-                            consolidated_df["produto"].value_counts().items()
-                        ):
-                            print(f"  - {produto}: {count} avaliacoes")
-
-            except Exception as e:
-                print(f"Erro ao processar pasta: {e}")
-
-        elif opcao == "2":
-            # Processa arquivo unico
-            print("\n" + "-" * 50)
-            print("PROCESSAMENTO DE ARQUIVO UNICO")
-            print("-" * 50)
-
-            csv_file = input("Digite o caminho completo do arquivo CSV: ").strip()
-            if not csv_file or not os.path.exists(csv_file):
-                print("Arquivo nao encontrado!")
-                continue
-
-            output_file = input(
-                "Nome do arquivo de saída (opcional, ENTER para automático): "
-            ).strip()
-            if not output_file:
-                output_file = f"resultado_{os.path.basename(csv_file)}"
-
-            try:
-                print(f"\nProcessando: {os.path.basename(csv_file)}")
-                df_result = analyzer.process_csv(csv_file, output_file)
-
-                if not df_result.empty:
-                    summary = analyzer.generate_summary_report(df_result)
-
-                    print(f"\nProcessamento concluido!")
-                    print(f"Total de avaliacoes: {len(df_result)}")
-                    print(f"Arquivo salvo: {output_file}")
-
-                    print(f"\nResumo da analise:")
-                    print(json.dumps(summary, indent=2, ensure_ascii=False))
-                else:
-                    print("Nenhum resultado valido gerado")
-
-            except Exception as e:
-                print(f"Erro ao processar arquivo: {e}")
-
-        elif opcao == "3":
-            # Teste com exemplo
-            print("\n" + "-" * 50)
-            print("TESTE COM EXEMPLO")
-            print("-" * 50)
-
-            print("Produtos disponiveis:")
-            for i, produto in enumerate(analyzer.phone_specs.keys(), 1):
-                print(f"  {i}. {produto}")
-
-            produto_escolhido = list(analyzer.phone_specs.keys())[
-                0
-            ]  # Samsung Galaxy A35 5G como padrao
-
-            example_review = """Esse celular e incrivel! A bateria dura mais de um dia inteiro 
-            de uso pesado, e a camera tira fotos muito nitidas. O unico problema e que as vezes 
-            trava um pouco quando uso muitos apps ao mesmo tempo. A tela tem cores muito vivas 
-            e o processador e bem rapido na maioria das tarefas."""
-
-            print(f"\nAnalisando exemplo para: {produto_escolhido}")
-            print(f"Avaliacao: {example_review}")
-
-            result = analyzer.analyze_review(example_review, produto_escolhido)
-
-            print(f"\nResultado da analise:")
-            print(json.dumps(result, indent=2, ensure_ascii=False))
-
-        elif opcao == "4":
-            print("\nEncerrando sistema...")
-            break
-
-        else:
-            print("Opcao invalida")
+        print(f"\n{'='*60}")
+        print("EXTRACAO CONCLUIDA")
+        print(f"{'='*60}")
+        print(f"Total de tuplas de opiniao: {len(consolidated_df)}")
+        print(f"Arquivo salvo: {output_file}")
+        print(f"\nResumo por categoria:")
+        print(json.dumps(summary, indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":

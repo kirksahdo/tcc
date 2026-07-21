@@ -1,3 +1,7 @@
 lib/
-
 venv/
+__pycache__/
+*.pyc
+grok_token
+mercadolivre_scraper.log
+mercadolivre_cookies.json

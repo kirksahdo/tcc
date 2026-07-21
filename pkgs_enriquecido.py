@@ -3,15 +3,16 @@ import pandas as pd
 
 net = Network(height="3000px", width="100%", directed=True, notebook=True)
 
-# Carregar as planilhas de opiniões
-df1 = pd.read_excel("avaliacoes_opinoes_limpas.xlsx")
+# Carregar as planilhas de opinioes extraidas pelo Sabia-3.1
+df1 = pd.read_excel("avaliacoes_opinioes.xlsx")
+df2 = pd.read_excel("avaliacoes_opinioes_2.xlsx")
+df3 = pd.read_excel("avaliacoes_opinioes_3.xlsx")
 
-# Combinar as planilhas
-df_opinioes = pd.concat([df1], ignore_index=True)
+# Combinar as planilhas (14.389 tuplas de opiniao)
+df_opinioes = pd.concat([df1, df2, df3], ignore_index=True)
 
-# FILTRAR: Remover opiniões do Samsung Galaxy A35 5G
-# df_opinioes = df_opinioes[df_opinioes["celular"] != "Samsung Galaxy A35 5G"]
-df_opinioes = df_opinioes[df_opinioes["celular"] == "Samsung Galaxy A54 5G"]
+# FILTRAR: Remover opinioes do Samsung Galaxy A35 5G (simulacao de item cold start)
+df_opinioes = df_opinioes[df_opinioes["celular"] != "Samsung Galaxy A35 5G"]
 
 # Lista de smartphones com atributos e subatributos
 smartphones = [
